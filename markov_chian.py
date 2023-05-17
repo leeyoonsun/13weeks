@@ -4,8 +4,9 @@ from konlpy.tag import Okt
 
 def generate_sentence(file_path, order, num_sentences):
     # 문장 생성을 위한 마르코프 체인 초기화
-    markov_chain = defaultdict(list)
+    markov_chain = defaultdict(list) # 기본값을 리스트로 설정
     state_counts = defaultdict(int)  # 기본값을 0으로 설정
+    
     
     # 형태소 분석기 초기화
     tokenizer = Okt()
