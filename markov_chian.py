@@ -16,7 +16,7 @@ def generate_sentence(file_path, order, num_sentences):
         text = file.read()
    
     # 문장 분리 ['굳 ㅋ', 'GDNTOPCLASSINTHECLUB', '뭐야 이 평점들은.... 나쁘진 않지만 10점 짜리는 더더욱 아니잖아']
-    sentences = text.split('\n')
+    sentences = text.split('\n') #각 리뷰를 줄바꿈 단위로 나열하겠다.
     
     # 마르코프 체인 구성
     for sentence in sentences:
@@ -29,42 +29,45 @@ def generate_sentence(file_path, order, num_sentences):
            
             prefix = tuple(words[i:i + order])
             
-            suffix = words[i + order]
+            suffix = words[i + order] # 리스트구조 
             
              # 차수가 2일때 예 prefix ('개봉', '되다니') suffix 믿어지지  prefix ('되다니', '믿어지지')  suffix 않음
              # {('개봉', '되다니'):[믿어지지, 기뻐요, 실망임]}
             markov_chain[prefix].append(suffix)
             
             
-            # {(('개봉', '되다니'),'믿어지지'):1}
+            # {(('개봉', '되다니'),'믿어지지'):1, (('개봉', '되다니'),'기뻐요'):2, (('개봉', '되다니'),'실망임'):1 }
             # {(('개봉', '되다니'),'기뻐요'):2}
             # {(('개봉', '되다니'),'실망임'):1}
-            state_counts[(prefix, suffix)] += 1
+            state_counts[(prefix, suffix)] += 1 
             # print(state_counts)
 
     generated_sentences = []
 
     # 문장 생성
     for _ in range(num_sentences):
-        current_prefix = random.choice(list(markov_chain.keys())) # 처음 시작 단어 랜덤 선택
-        sentence = list(current_prefix)   # 새롭게 생성할 문장 초기화
+        current_prefix = random.choice(list(markov_chain.keys())) #처음 문장: markov_chain.keys를 리스트로 가지고 와서 처음 시작 단어 랜덤 선택
+        sentence = list(current_prefix)   # 새롭게 생성할 문장 sentence에 초기화
+        #예. [개봉 되다니 기뻐요 정말 춤을 추고 싶어요 잘 보고 갑니다]
 
         while True:
-            next_words = markov_chain[current_prefix]
+            next_words = markov_chain[current_prefix] #[믿어지지, 기뻐요, 실망임]
             if not next_words:     #  다음 단어를 예측할 수 없는 경우 문장 생성 중단
                 break
-            # 빈도에 따른 확률가중치 계산: 
+            # [믿어지지, 기뻐요, 실망임]빈도에 따른 확률가중치 계산: 
             weights = [state_counts[(current_prefix, suffix)] for suffix in next_words]
+            # [2, 1, 1] 믿어지지가 뽑힐 확률이 더 큼 
             next_word = random.choices(next_words, weights=weights)[0]  # random.choices 함수는 weights라는 확률 가중치로 k개의, 원소를 선택, k를 지정하지 않으면 default로 하나만 선택
-            sentence.append(next_word)
+            sentence.append(next_word) #계속 문장 추가 
             
             if next_word.endswith('.') or next_word.endswith('!') or next_word.endswith('?'):
                 break
             # sentence에서 마지막 두개의 단어를 선택하여 tuple로 만듦
             # 생성된 문장이 ["개봉", "되다니", "정말", "기뻐요"]라면 ("정말", "기뻐요") 튜플이 만들어짐.
+            #마지막 두개의 단어
             current_prefix = tuple(sentence[-order:])  
 
-        generated_sentence = ' '.join(sentence)
+        generated_sentence = ' '.join(sentence) #띄어쓰기, 다음 단어 붙여주기 
         generated_sentences.append(generated_sentence)
 
     return generated_sentences
